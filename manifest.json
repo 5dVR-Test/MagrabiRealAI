@@ -1,11 +1,11 @@
 {
-  "name": "The Frame Run",
-  "short_name": "The Frame Run",
+  "name": "Magrabi AI",
+  "short_name": "Magrabi AI",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "landscape",
+  "orientation": "Portrait",
   "icons": [
     {
       "src": "TemplateData/web-app-manifest-192x192.png",
