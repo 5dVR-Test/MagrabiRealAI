@@ -205,11 +205,9 @@
 
     function initializeUnity() {
       fullscreenPrompt.style.display = "none";
-      splash.style.display = "block";
       createUnityInstance(canvas, config, (progress) => {
         barFill.style.width = (progress * 100) + "%";
       }).then((unityInstance) => {
-        splash.style.display = "none";
         initialized = true;
       }).catch((message) => {
         alert(message);
