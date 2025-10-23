@@ -1,123 +1,363 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | AIHub</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  
-    <!-- MICROPHONE PRO START -->
-    <script src='./microphone.js'></script>
-    <!-- MICROPHONE PRO END -->
-</head>
-  <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+    <link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" href="TemplateData/Icon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+        }
+
+        #unity-container, #unity-canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #RotateWarningScreen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            #RotateWarningScreen img {
+                max-width: 200px;
+            }
+
+        #FullscreenPrompt {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 9998;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+
+            #FullscreenPrompt .logo {
+                width: 80%;
+                max-width: 600px;
+                height: auto;
+                margin-bottom: 60px;
+                object-fit: contain;
+            }
+
+        #fullscreen-prompt-box {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-content: center;
+            width: 100%;
+            font-size: 18px;
+        }
+
+            #fullscreen-prompt-box img {
+                width: 48px;
+                height: 48px;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+            }
+
+                #fullscreen-prompt-box img:hover {
+                    transform: scale(1.1);
+                }
+
+        #installBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 16px;
+            font-size: 16px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 9999;
+            display: none;
+        }
+
+            #installBtn img {
+                height: 20px;
+                vertical-align: middle;
+                margin-right: 8px;
+            }
+
+        #LoadingSplash {
+            position: fixed;
+            inset: 0;
+            z-index: 9997;
+            background-color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        #loading-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #loading-text {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #custom-loading-bar {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 20px;
+            background-color: #1f1f1f;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        #custom-loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: #FFA500;
+            border-radius: 12px 0 0 12px;
+            transition: width 0.3s ease;
+        }
+
+        .overlay-title {
+            position: absolute;
+            z-index: 10;
+            top: 4vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            height: auto;
+            max-width: 90%;
+            max-height: 60vh; /* ensures it never exceeds screen height */
+        }
+
+        .overlay-logo {
+            position: absolute;
+            bottom: 2vh;
+            right: 2vw;
+            width: 60px;
+            height: auto;
+            z-index: 10;
+        }
+
+        .background-img {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            object-position: center;
+        }
+
+
+
+        .overlay-logo {
+            width: 12vw;
+            max-width: 40px;
+        }
+        
+    </style>
+
+        <!-- MICROPHONE PRO START -->
+        <script src='./microphone.js'></script>
+        <!-- MICROPHONE PRO END -->
+    </head>
+
+<body>
+
+  <!-- ⬅ Background Image -->
+ 
+
+  <!-- 🔄 Rotate Prompt -->
+  <div id="RotateWarningScreen">
+    <img src="TemplateData/lg.png" alt="Rotate your device">
+  </div>
+
+  <!-- 🔲 Fullscreen Prompt -->
+  <div id="FullscreenPrompt">
+    <img src="TemplateData/fullscreen.png" alt="Logo" class="logo">
+    <div id="fullscreen-prompt-box">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <p style="margin: 0 0 8px 0;">For the best gaming experience, switch to full screen.</p>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span>Click Here</span>
+          <img id="fullscreenBtn" src="TemplateData/Ficon.png" alt="Enter Fullscreen">
         </div>
       </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">AIHub</div>
-      </div>
     </div>
-    <script>
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+  </div>
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
+  <!-- ⏳ Loading Splash -->
+  <div id="LoadingSplash">
+   <img class="background-img" src="TemplateData/background.png" alt="Background" />
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/Build.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/Build.data",
-        frameworkUrl: buildUrl + "/Build.framework.js",
-        codeUrl: buildUrl + "/Build.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "5d AI",
-        productName: "AIHub",
-        productVersion: "0.1",
-        showBanner: unityShowBanner,
-      };
+  <!-- 👓 Title Image -->
+  <img class="overlay-title" src="TemplateData/title.png" alt="The Frame Run" />
 
-      // By default Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
+  <!-- 🔻 Logo Bottom-Right -->
+  <img class="overlay-logo" src="TemplateData/logo.png" alt="M logo" />
+    <div id="loading-text"></div>
+    <div id="custom-loading-bar">
+      <div id="custom-loading-bar-fill"></div>
+    </div>
+  </div>
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
+  <!-- Unity Container -->
+  <div id="unity-container">
+    <canvas id="unity-canvas"></canvas>
+  </div>
 
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
+  <button id="installBtn">
+    <img src="TemplateData/install-icon.png" alt="Install">Install The App
+  </button>
 
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
+  <script>
 
-        unityShowBanner('WebGL builds are not supported on mobile devices.');
+    const rotateScreen = document.getElementById("RotateWarningScreen");
+    const fullscreenPrompt = document.getElementById("FullscreenPrompt");
+    const splash = document.getElementById("LoadingSplash");
+    const barFill = document.getElementById("custom-loading-bar-fill");
+    const canvas = document.getElementById("unity-canvas");
+    const installBtn = document.getElementById("installBtn");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+
+    let initialized = false;
+    let deferredPrompt;
+
+    function isIOS() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent);
+    }
+
+    function checkOrientation() {
+      if (window.innerHeight > window.innerWidth) {
+        rotateScreen.style.display = "flex";
+        fullscreenPrompt.style.display = "none";
       } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+        rotateScreen.style.display = "none";
+        fullscreenPrompt.style.display = document.fullscreenElement ? "none" : "flex";
       }
+    }
 
-      loadingBar.style.display = "block";
+    function initializeUnity() {
+      fullscreenPrompt.style.display = "none";
+      splash.style.display = "block";
+      createUnityInstance(canvas, config, (progress) => {
+        barFill.style.width = (progress * 100) + "%";
+      }).then((unityInstance) => {
+        splash.style.display = "none";
+        initialized = true;
+      }).catch((message) => {
+        alert(message);
+      });
+    }
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-          loadingBar.style.display = "none";
-          fullscreenButton.onclick = () => {
-            unityInstance.SetFullscreen(1);
-          };
-        }).catch((message) => {
-          alert(message);
+    fullscreenBtn.addEventListener("click", () => {
+      const elem = document.documentElement;
+      fullscreenPrompt.style.display = "none";
+      if (!initialized) initializeUnity();
+      if (isIOS()) return;
+      if (elem.requestFullscreen) elem.requestFullscreen();
+      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
+      else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+    });
+
+    function onFullscreenChange() {
+      const isFullscreen = document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+      if (isFullscreen) fullscreenPrompt.style.display = "none";
+    }
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    document.addEventListener("MSFullscreenChange", onFullscreenChange);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    installBtn.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted install');
+          } else {
+            console.log('User dismissed install');
+          }
+          deferredPrompt = null;
+          installBtn.style.display = 'none';
         });
-      };
-      document.body.appendChild(script);
-    </script>
-  </body>
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log("✅ Service Worker registered"))
+        .catch((err) => console.error("❌ SW failed", err));
+    }
+
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/Build.loader.js";
+    const config = {
+        dataUrl: buildUrl + "/Build.data", frameworkUrl: buildUrl + "/Build.framework.js", codeUrl: buildUrl + "/Build.wasm", streamingAssetsUrl: "StreamingAssets", companyName: "5d AI", productName: "AIHub", productVersion: "0.1", showBanner: unityShowBanner,
+    };
+
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    document.body.appendChild(script);
+  </script>
+</body>
 </html>
