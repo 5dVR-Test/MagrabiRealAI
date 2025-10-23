@@ -120,12 +120,13 @@
           alert(message);
         });
       };
-      document.body.appendChild(script);
-      if ('serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log("✅ Service Worker registered"))
         .catch((err) => console.error("❌ SW failed", err));
     }
+      document.body.appendChild(script);
+    
     </script>
   </body>
 </html>
