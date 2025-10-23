@@ -31,27 +31,27 @@
             top: 0;
             left: 0;
         }
-         #installBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            color: black;
-            border: none;
-            padding: 10px 16px;
-            font-size: 16px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 9999;
-            display: none;
-        }
+       #installBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: transparent;   /* no background */
+  color: white;               /* choose color that fits your UI */
+  border: none;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  box-shadow: none;           /* remove shadow */
+  cursor: pointer;
+  z-index: 9999;
+  display: none;              /* still hidden until installable */
+}
 
-            #installBtn img {
-                height: 20px;
-                vertical-align: middle;
-                margin-right: 8px;
-            }
+#installBtn img {
+  height: 24px;               /* slightly larger for visibility */
+  vertical-align: middle;
+  margin-right: 8px;
+}
         </style>
 </head>
   <body>
