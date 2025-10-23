@@ -66,12 +66,11 @@
       <div id="unity-warning"> </div>
       <div id="unity-footer">
         <div id="unity-fullscreen-button"></div>
-         <button id="installBtn">
-    <img src="TemplateData/install-icon.png" alt="Install">Install The App
-  </button>
       </div>
     </div>
-    
+     <button id="installBtn">
+    <img src="TemplateData/install-icon.png" alt="Install">Install The App
+  </button>
 
     <script>
       var container = document.querySelector("#unity-container");
@@ -100,7 +99,6 @@
         companyName: "5d AI",
         productName: "AIHub",
         productVersion: "0.1",
-        
       };
 
       // By default Unity keeps WebGL canvas render target size matched with
@@ -147,25 +145,30 @@
           alert(message);
         });
       };
-       installBtn.addEventListener('click', () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted install');
-          } else {
-            console.log('User dismissed install');
-          }
-          deferredPrompt = null;
-          installBtn.style.display = 'none';
-        });
-      }
-    });
-        if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log("✅ Service Worker registered"))
-        .catch((err) => console.error("❌ SW failed", err));
-    }
+  let deferredPrompt = null; // <-- you were using this without defining it
+
+  // Show the button only when the browser says the app is installable
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();            // stop the mini-infobar
+    deferredPrompt = e;            // save the event for your click handler
+    installBtn.style.display = "block";  // <-- actually show the button
+  });
+
+  // Hide the button once installed
+  window.addEventListener("appinstalled", () => {
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+  });
+
+  // Your existing click handler will now work because deferredPrompt is set
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+    console.log("PWA install:", choice.outcome);
+  });
       document.body.appendChild(script);
     
     </script>
